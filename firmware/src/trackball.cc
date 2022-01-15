@@ -252,12 +252,12 @@ config_t config = {
         { SensorFunction::VERTICAL_SCROLL, SensorFunction::NO_FUNCTION },
     },
     .sensor_cpi = {
-        1200 / 100,
-        1600 / 100,
+        600 / 100,
+        800 / 100,
     },
     .sensor_shifted_cpi = {
-        1200 / 100,
-        1600 / 100,
+        600 / 100,
+        800 / 100,
     },
     .button_function = {
         ButtonFunction::BUTTON1,
@@ -326,7 +326,7 @@ int16_t handle_scroll(int sensor, int axis, int16_t movement, uint8_t multiplier
  * different CPI values.
  * Oh, and the running averages are sensitive to how many samples per second
  * we're getting from the sensors, at the time it was being written it was
- * around 250.
+ * around 500.
  */
 void handle_twist_to_scroll() {
     if (fabs(running_avg_x) < 0.1 / 12 && fabs(running_avg_y) < 0.1 / 12) {
@@ -360,6 +360,10 @@ void handle_twist_to_scroll() {
 }
 
 void hid_task() {
+    if (!tud_hid_ready()) {
+        return;
+    }
+
     memset(&report, 0, sizeof(report));
 
     uint32_t pin_state = gpio_get_all();
@@ -472,9 +476,7 @@ void hid_task() {
 
     handle_twist_to_scroll();
 
-    if (tud_hid_ready()) {
-        tud_hid_report(1, &report, sizeof(report));
-    }
+    tud_hid_report(1, &report, sizeof(report));
 }
 
 void pin_init(uint pin) {
